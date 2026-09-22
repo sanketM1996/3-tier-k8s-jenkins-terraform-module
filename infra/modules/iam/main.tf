@@ -1,5 +1,7 @@
+# ============================================================
 # EKS Cluster Role
-# Trust policy
+# ============================================================
+
 data "aws_iam_policy_document" "eks_cluster_assume_role" {
   statement {
     effect = "Allow"
@@ -17,7 +19,7 @@ data "aws_iam_policy_document" "eks_cluster_assume_role" {
     ]
   }
 }
-# Role
+
 resource "aws_iam_role" "eks_cluster" {
   name = "${var.project_name}-${var.environment}-eks-cluster-role"
 
@@ -30,14 +32,18 @@ resource "aws_iam_role" "eks_cluster" {
     }
   )
 }
-# Attach AWS managed policy
+
 resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
   role = aws_iam_role.eks_cluster.name
 
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
+
+
+# ============================================================
 # EKS Node Role
-# Trust policy
+# ============================================================
+
 data "aws_iam_policy_document" "eks_node_assume_role" {
   statement {
     effect = "Allow"
@@ -55,7 +61,7 @@ data "aws_iam_policy_document" "eks_node_assume_role" {
     ]
   }
 }
-# Role
+
 resource "aws_iam_role" "eks_node" {
   name = "${var.project_name}-${var.environment}-eks-node-role"
 
@@ -68,26 +74,30 @@ resource "aws_iam_role" "eks_node" {
     }
   )
 }
-# Attach Node Policies
+
 resource "aws_iam_role_policy_attachment" "eks_worker_node_policy" {
   role = aws_iam_role.eks_node.name
 
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
 }
-# ECR Read Only
+
 resource "aws_iam_role_policy_attachment" "ecr_read_only" {
   role = aws_iam_role.eks_node.name
 
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
 }
-# CNI Policy
+
 resource "aws_iam_role_policy_attachment" "eks_cni_policy" {
   role = aws_iam_role.eks_node.name
 
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
+
+
+# ============================================================
 # EBS CSI Driver Role
-# Trust policy
+# ============================================================
+
 data "aws_iam_policy_document" "ebs_csi_assume_role" {
   statement {
     effect = "Allow"
@@ -106,7 +116,7 @@ data "aws_iam_policy_document" "ebs_csi_assume_role" {
     ]
   }
 }
-# Role
+
 resource "aws_iam_role" "ebs_csi" {
   name = "${var.project_name}-${var.environment}-ebs-csi-role"
 
@@ -119,14 +129,18 @@ resource "aws_iam_role" "ebs_csi" {
     }
   )
 }
-# Attach EBS CSI policy
+
 resource "aws_iam_role_policy_attachment" "ebs_csi_policy" {
   role = aws_iam_role.ebs_csi.name
 
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
+
+
+# ============================================================
 # AWS Load Balancer Controller Role
-# Trust policy
+# ============================================================
+
 data "aws_iam_policy_document" "alb_controller_assume_role" {
   statement {
     effect = "Allow"
@@ -145,7 +159,7 @@ data "aws_iam_policy_document" "alb_controller_assume_role" {
     ]
   }
 }
-# Role
+
 resource "aws_iam_role" "alb_controller" {
   name = "${var.project_name}-${var.environment}-alb-controller-role"
 
@@ -158,16 +172,25 @@ resource "aws_iam_role" "alb_controller" {
     }
   )
 }
-# ALB Policy
-resource "aws_iam_policy" "alb_controller" {
-  name = "${var.project_name}-${var.environment}-alb-controller-policy"
 
+
+# ============================================================
+# AWS Load Balancer Controller IAM Policy
+# ============================================================
+
+resource "aws_iam_policy" "alb_controller" {
+  name        = "${var.project_name}-${var.environment}-alb-controller-policy"
   description = "IAM policy for AWS Load Balancer Controller"
 
   policy = jsonencode({
     Version = "2012-10-17"
 
     Statement = [
+
+      # --------------------------------------------------------
+      # Create AWS Load Balancer Service Linked Role
+      # --------------------------------------------------------
+
       {
         Effect = "Allow"
 
@@ -183,6 +206,10 @@ resource "aws_iam_policy" "alb_controller" {
           }
         }
       },
+
+      # --------------------------------------------------------
+      # EC2 Describe Permissions
+      # --------------------------------------------------------
 
       {
         Effect = "Allow"
@@ -209,6 +236,10 @@ resource "aws_iam_policy" "alb_controller" {
         Resource = "*"
       },
 
+      # --------------------------------------------------------
+      # ELB Describe Permissions
+      # --------------------------------------------------------
+
       {
         Effect = "Allow"
 
@@ -216,16 +247,22 @@ resource "aws_iam_policy" "alb_controller" {
           "elasticloadbalancing:DescribeLoadBalancers",
           "elasticloadbalancing:DescribeLoadBalancerAttributes",
           "elasticloadbalancing:DescribeListeners",
+          "elasticloadbalancing:DescribeListenerAttributes",
           "elasticloadbalancing:DescribeListenerCertificates",
           "elasticloadbalancing:DescribeSSLPolicies",
           "elasticloadbalancing:DescribeRules",
           "elasticloadbalancing:DescribeTargetGroups",
+          "elasticloadbalancing:DescribeTargetGroupAttributes",
           "elasticloadbalancing:DescribeTargetHealth",
           "elasticloadbalancing:DescribeTags"
         ]
 
         Resource = "*"
       },
+
+      # --------------------------------------------------------
+      # ELB Create / Modify / Delete Permissions
+      # --------------------------------------------------------
 
       {
         Effect = "Allow"
@@ -234,21 +271,68 @@ resource "aws_iam_policy" "alb_controller" {
           "elasticloadbalancing:CreateLoadBalancer",
           "elasticloadbalancing:CreateTargetGroup",
           "elasticloadbalancing:CreateListener",
+          "elasticloadbalancing:CreateRule",
+
           "elasticloadbalancing:DeleteLoadBalancer",
           "elasticloadbalancing:DeleteTargetGroup",
           "elasticloadbalancing:DeleteListener",
+          "elasticloadbalancing:DeleteRule",
+
           "elasticloadbalancing:ModifyLoadBalancerAttributes",
           "elasticloadbalancing:ModifyTargetGroup",
           "elasticloadbalancing:ModifyTargetGroupAttributes",
           "elasticloadbalancing:ModifyListener",
+          "elasticloadbalancing:ModifyRule",
+
           "elasticloadbalancing:AddTags",
           "elasticloadbalancing:RemoveTags",
+
           "elasticloadbalancing:RegisterTargets",
           "elasticloadbalancing:DeregisterTargets"
         ]
 
         Resource = "*"
       },
+
+      # --------------------------------------------------------
+      # Security Group Permissions
+      # --------------------------------------------------------
+
+      {
+        Effect = "Allow"
+
+        Action = [
+          "ec2:AuthorizeSecurityGroupIngress",
+          "ec2:RevokeSecurityGroupIngress",
+          "ec2:CreateSecurityGroup"
+        ]
+
+        Resource = "*"
+      },
+
+      # --------------------------------------------------------
+      # Tag Security Group Created by CreateSecurityGroup
+      # --------------------------------------------------------
+
+      {
+        Effect = "Allow"
+
+        Action = [
+          "ec2:CreateTags"
+        ]
+
+        Resource = "arn:aws:ec2:*:*:security-group/*"
+
+        Condition = {
+          StringEquals = {
+            "ec2:CreateAction" = "CreateSecurityGroup"
+          }
+        }
+      },
+
+      # --------------------------------------------------------
+      # Cognito / ACM
+      # --------------------------------------------------------
 
       {
         Effect = "Allow"
@@ -261,6 +345,10 @@ resource "aws_iam_policy" "alb_controller" {
 
         Resource = "*"
       },
+
+      # --------------------------------------------------------
+      # AWS WAF
+      # --------------------------------------------------------
 
       {
         Effect = "Allow"
@@ -277,6 +365,10 @@ resource "aws_iam_policy" "alb_controller" {
         Resource = "*"
       },
 
+      # --------------------------------------------------------
+      # AWS Shield
+      # --------------------------------------------------------
+
       {
         Effect = "Allow"
 
@@ -288,24 +380,18 @@ resource "aws_iam_policy" "alb_controller" {
         ]
 
         Resource = "*"
-      },
-
-      {
-        Effect = "Allow"
-
-        Action = [
-          "ec2:AuthorizeSecurityGroupIngress",
-          "ec2:RevokeSecurityGroupIngress"
-        ]
-
-        Resource = "*"
       }
     ]
   })
 
   tags = var.tags
 }
-# Attach ALB policy
+
+
+# ============================================================
+# Attach ALB Controller Policy
+# ============================================================
+
 resource "aws_iam_role_policy_attachment" "alb_controller" {
   role = aws_iam_role.alb_controller.name
 

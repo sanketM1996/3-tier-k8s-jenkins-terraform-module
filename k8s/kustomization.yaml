@@ -5,7 +5,7 @@ namespace: prod
 
 resources:
 
-  - namespace.yaml
+  # - namespace.yaml
 
     # - rbac/serviceaccount.yaml
     # - rbac/role.yaml

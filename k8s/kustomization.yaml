@@ -20,7 +20,7 @@ resources:
   - mysql/Service.yaml
   - mysql/StorageClass.yaml
 
-  - mysql/statefulset.yaml
+  - mysql/StatefulSet.yaml
 
   - backend/deployment.yaml
   - backend/service.yaml

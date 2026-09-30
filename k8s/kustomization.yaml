@@ -7,11 +7,11 @@ resources:
 
   - namespace.yaml
 
-  - rbac/serviceaccount.yaml
-  - rbac/role.yaml
-  - rbac/rolebinding.yaml
-  - rbac/clusterrole.yaml
-  - rbac/clusterrolebinding.yaml
+    - rbac/serviceaccount.yaml
+    - rbac/role.yaml
+    - rbac/rolebinding.yaml
+    - rbac/clusterrole.yaml
+    - rbac/clusterrolebinding.yaml
   
 
   - mysql/ConfigMap.yaml

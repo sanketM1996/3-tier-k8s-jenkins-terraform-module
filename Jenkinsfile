@@ -91,7 +91,7 @@ pipeline {
             steps {
                 script {
                     withKubeConfig(caCertificate: '', clusterName: 'ecommerce-dev-eks', contextName: '', credentialsId: 'k8-token', namespace: 'prod', restrictKubeConfigAccess: false, serverUrl: 'https://ED3D4C3367E71EA28F8A41EBF5734E25.gr7.ap-south-1.eks.amazonaws.com') {
-                        kubectl apply -k k8s/
+                        sh 'kubectl apply -k k8s/'
                         sleep 30
             }
                 }

@@ -127,7 +127,7 @@ pipeline {
                         credentialsId: 'k8-token',
                         namespace: 'prod',
                         restrictKubeConfigAccess: false,
-                        serverUrl: 'https://ED3D4C3367E71EA28F8A41EBF5734E25.gr7.ap-south-1.eks.amazonaws.com'
+                        serverUrl: 'https://E000D2B0F1019157431EFBC2CD92856A.gr7.ap-south-1.eks.amazonaws.com'
                     ) {
                         sh 'kubectl apply -k k8s/'
                         sleep 30

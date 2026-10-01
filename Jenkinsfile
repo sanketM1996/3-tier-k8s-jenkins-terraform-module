@@ -125,7 +125,7 @@ pipeline {
                         clusterName: 'ecommerce-dev-eks',
                         contextName: '',
                         credentialsId: 'k8-token',
-                        namespace: 'prod',
+                        namespace: 'dev',
                         restrictKubeConfigAccess: false,
                         serverUrl: 'https://E000D2B0F1019157431EFBC2CD92856A.gr7.ap-south-1.eks.amazonaws.com'
                     ) {
